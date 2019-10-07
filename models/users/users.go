@@ -28,6 +28,7 @@ func collection() *mongo.Collection {
 	}
 	return _collection
 }
+
 func cursorToArray(cursor *mongo.Cursor) []User {
 	var results []User
 	for cursor.Next(_ctx) {

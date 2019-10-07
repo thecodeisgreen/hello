@@ -113,15 +113,30 @@ func main() {
 
 	manager := manage.NewDefaultManager()
 
-	manager.MustTokenStorage(store.NewMemoryTokenStore())
+	manager.MustTokenStorage(store.NewFileTokenStore(os.Getenv("ROOT_DIR") + "/_tokens/store"))
+	//manager.MapAccessGenerate(generates.NewJWTAccessGenerate([]byte("00000000"), jwt.SigningMethodHS512))
 
 	clientStore := store.NewClientStore()
+
 	clientStore.Set("000000", &models.Client{
 		ID:     "000000",
 		Secret: "999999",
 		Domain: "http://localhost",
 	})
+
+	clientStore.Set("Hubert", &models.Client{
+		ID:     "Hubert",
+		Secret: "17Elvis17",
+		Domain: "http://localhost",
+	})
 	manager.MapClientStorage(clientStore)
+
+	// refresh_token wanted
+	manager.SetClientTokenCfg(&manage.Config{
+		AccessTokenExp:    time.Hour * 1,
+		RefreshTokenExp:   time.Hour * 2,
+		IsGenerateRefresh: true,
+	})
 
 	srv := server.NewDefaultServer(manager)
 	srv.SetAllowGetAccessRequest(true)
@@ -145,6 +160,15 @@ func main() {
 
 	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
 		srv.HandleTokenRequest(w, r)
+	})
+
+	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+		token, err := srv.ValidationBearerToken(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		w.Write([]byte(token.GetScope() + " Doing good?"))
 	})
 
 	log.Fatal(http.ListenAndServe(os.Getenv("PORT"), nil))

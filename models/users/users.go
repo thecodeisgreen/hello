@@ -3,8 +3,9 @@ package users
 import (
 	"context"
 	"log"
-	"time"
 	"reflect"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,17 +18,19 @@ type User struct {
 	Firstname string
 }
 
-var collection *mongo.Collection
-var ctx context.Context
+var _collection *mongo.Collection
+var _ctx context.Context
 
-func init() {
-	ctx, _ = context.WithTimeout(context.Background(), 5*time.Second)
-	collection = db.Db().Collection("users")
+func collection() *mongo.Collection {
+	if _collection == nil {
+		_ctx, _ = context.WithTimeout(context.Background(), 5*time.Second)
+		_collection = db.Db().Collection("users")
+	}
+	return _collection
 }
-
 func cursorToArray(cursor *mongo.Cursor) []User {
 	var results []User
-	for cursor.Next(ctx) {
+	for cursor.Next(_ctx) {
 		var elem User
 		err := cursor.Decode(&elem)
 		if err != nil {
@@ -39,7 +42,7 @@ func cursorToArray(cursor *mongo.Cursor) []User {
 	if err := cursor.Err(); err != nil {
 		log.Fatal(err)
 	}
-	cursor.Close(ctx)
+	cursor.Close(_ctx)
 
 	return results
 }
@@ -48,7 +51,7 @@ func cursorToArray(cursor *mongo.Cursor) []User {
 func Create(
 	Lastname string,
 	Firstname string) {
-	collection.InsertOne(ctx, User{
+	collection().InsertOne(_ctx, User{
 		Lastname:  Lastname,
 		Firstname: Firstname})
 }
@@ -58,14 +61,14 @@ func GetOneByID(id string) User {
 	var result User
 	objectID, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.M{"_id": objectID}
-	collection.FindOne(ctx, filter).Decode(&result)
+	collection().FindOne(_ctx, filter).Decode(&result)
 	return result
 }
 
 // Get query filter on users collection
 func Get(filter bson.M) []User {
 
-	cursor, err := collection.Find(ctx, filter)
+	cursor, err := collection().Find(_ctx, filter)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -87,14 +90,14 @@ func Filter(users []User, filterFunc func(user User) bool) []User {
 }
 
 func Map(users []User, mapFunc interface{}) interface{} {
-	
+
 	mapFuncValue := reflect.ValueOf(mapFunc)
 	mapFuncType := mapFuncValue.Type()
 
 	if mapFuncType.Kind() != reflect.Func || mapFuncType.NumIn() != 1 || mapFuncType.NumOut() != 1 {
 		panic("second argument must be a map function")
 	}
-	
+
 	if !mapFuncType.In(0).ConvertibleTo(reflect.TypeOf(User{})) {
 		panic("Map function's argument is not compatible with type of array.")
 	}
@@ -102,11 +105,10 @@ func Map(users []User, mapFunc interface{}) interface{} {
 	resultSliceType := reflect.SliceOf(mapFuncType.Out(0))
 	resultSlice := reflect.MakeSlice(resultSliceType, 0, len(users))
 
-
-	for i:=0; i < len(users); i++ {
+	for i := 0; i < len(users); i++ {
 		resultSlice = reflect.Append(resultSlice, mapFuncValue.Call([]reflect.Value{reflect.ValueOf(users[i])})[0])
 	}
 
 	return resultSlice
-	
+
 }

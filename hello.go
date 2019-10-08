@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/oauth2.v3/errors"
 	"gopkg.in/oauth2.v3/manage"
 	"gopkg.in/oauth2.v3/models"
@@ -85,37 +84,7 @@ func filter(items interface{}, filterFunc interface{}) interface{} {
 	return resultSlice.Interface()
 }
 
-func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	var start time.Time
-	//users.Create("bettan", "hubert")
-	//users.Create("bettan", "augustine")
-	allUsers := users.Get(bson.M{"lastname": "bettan"})
-	start = time.Now()
-	fmt.Println(filter(allUsers, filterFunc))
-	fmt.Println(time.Since(start))
-
-	start = time.Now()
-	fmt.Println(users.Filter(allUsers, filterFunc))
-	fmt.Println(time.Since(start))
-
-	start = time.Now()
-	fmt.Println(users.Map(allUsers, mapFunc))
-	fmt.Println(time.Since(start))
-
-	start = time.Now()
-	fmt.Println(mapUsers(allUsers))
-	fmt.Println(time.Since(start))
-
-	manager := manage.NewDefaultManager()
-
-	manager.MustTokenStorage(store.NewFileTokenStore(os.Getenv("ROOT_DIR") + "/_tokens/store"))
-	//manager.MapAccessGenerate(generates.NewJWTAccessGenerate([]byte("00000000"), jwt.SigningMethodHS512))
-
+func initClientStore() *store.ClientStore {
 	clientStore := store.NewClientStore()
 
 	clientStore.Set("000000", &models.Client{
@@ -126,10 +95,25 @@ func main() {
 
 	clientStore.Set("Hubert", &models.Client{
 		ID:     "Hubert",
-		Secret: "17Elvis17",
+		Secret: "",
 		Domain: "http://localhost",
 	})
-	manager.MapClientStorage(clientStore)
+
+	return clientStore
+}
+
+func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	manager := manage.NewDefaultManager()
+
+	manager.MustTokenStorage(store.NewFileTokenStore(os.Getenv("ROOT_DIR") + "/_tokens/store"))
+	//manager.MapAccessGenerate(generates.NewJWTAccessGenerate([]byte("00000000"), jwt.SigningMethodHS512))
+
+	manager.MapClientStorage(initClientStore())
 
 	// refresh_token wanted
 	manager.SetClientTokenCfg(&manage.Config{
@@ -151,14 +135,11 @@ func main() {
 		log.Println("Response Error:", re.Error.Error())
 	})
 
-	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
-		err := srv.HandleAuthorizeRequest(w, r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
+	http.HandleFunc("/o/token", func(w http.ResponseWriter, r *http.Request) {
+		srv.HandleTokenRequest(w, r)
 	})
 
-	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/o/refresh", func(w http.ResponseWriter, r *http.Request) {
 		srv.HandleTokenRequest(w, r)
 	})
 
@@ -171,6 +152,7 @@ func main() {
 		w.Write([]byte(token.GetScope() + " Doing good?"))
 	})
 
+	fmt.Println("starting server")
 	log.Fatal(http.ListenAndServe(os.Getenv("PORT"), nil))
 
 }

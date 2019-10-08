@@ -34,6 +34,14 @@
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:f3b5bf575d84780832516c53d135b4917fe891ca67c472959578b7e09277e4b2"
+  name = "github.com/otiai10/gosseract"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5bb1d6fc20fa3fafb3236d6c93c393369e4b38d9"
+  version = "v2.2.1"
+
+[[projects]]
   branch = "master"
   digest = "1:3297205be37afe3f25875b99ad48babe2aebb6e0cf61631d6d9851ecb266370e"
   name = "github.com/tidwall/btree"
@@ -206,6 +214,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/joho/godotenv",
+    "github.com/otiai10/gosseract",
     "go.mongodb.org/mongo-driver/bson",
     "go.mongodb.org/mongo-driver/bson/primitive",
     "go.mongodb.org/mongo-driver/mongo",

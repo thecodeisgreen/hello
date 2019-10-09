@@ -10,10 +10,10 @@ import (
 	"os"
 	"reflect"
 
+	"hello/tcig.io/authentication"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"gopkg.in/oauth2.v3/models"
-	"gopkg.in/oauth2.v3/store"
 )
 
 func filterFunc(user users.User) bool {
@@ -83,24 +83,6 @@ func filter(items interface{}, filterFunc interface{}) interface{} {
 	return resultSlice.Interface()
 }
 
-func initClientStore() *store.ClientStore {
-	clientStore := store.NewClientStore()
-
-	clientStore.Set("000000", &models.Client{
-		ID:     "000000",
-		Secret: "999999",
-		Domain: "http://localhost",
-	})
-
-	clientStore.Set("Hubert", &models.Client{
-		ID:     "Hubert",
-		Secret: "",
-		Domain: "http://localhost",
-	})
-
-	return clientStore
-}
-
 func ReverseProxy() gin.HandlerFunc {
 
 	target := "localhost:3000"
@@ -126,41 +108,6 @@ func main() {
 	}
 
 	/*
-		manager := manage.NewDefaultManager()
-
-		manager.MustTokenStorage(store.NewFileTokenStore(os.Getenv("ROOT_DIR") + "/_tokens/store"))
-		//manager.MapAccessGenerate(generates.NewJWTAccessGenerate([]byte("00000000"), jwt.SigningMethodHS512))
-
-		manager.MapClientStorage(initClientStore())
-
-		// refresh_token wanted
-		manager.SetClientTokenCfg(&manage.Config{
-			AccessTokenExp:    time.Hour * 1,
-			RefreshTokenExp:   time.Hour * 2,
-			IsGenerateRefresh: true,
-		})
-
-		srv := server.NewDefaultServer(manager)
-		srv.SetAllowGetAccessRequest(true)
-		srv.SetClientInfoHandler(server.ClientFormHandler)
-
-		srv.SetInternalErrorHandler(func(err error) (re *errors.Response) {
-			log.Println("Internal Error:", err.Error())
-			return
-		})
-
-		srv.SetResponseErrorHandler(func(re *errors.Response) {
-			log.Println("Response Error:", re.Error.Error())
-		})
-
-		http.HandleFunc("/o/token", func(w http.ResponseWriter, r *http.Request) {
-			srv.HandleTokenRequest(w, r)
-		})
-
-		http.HandleFunc("/o/refresh", func(w http.ResponseWriter, r *http.Request) {
-			srv.HandleTokenRequest(w, r)
-		})
-
 		http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 			token, err := srv.ValidationBearerToken(r)
 			if err != nil {
@@ -169,7 +116,6 @@ func main() {
 			}
 			w.Write([]byte(token.GetScope() + " Doing good?"))
 		})
-
 	*/
 
 	router := gin.Default()
@@ -186,6 +132,16 @@ func main() {
 		})
 	})
 
+	router.GET("/version", func(c *gin.Context) {
+		authentication.CheckAccess(c, func(scope string) {
+			c.JSON(200, gin.H{
+				"version": "1.0.0",
+				"scope":   scope,
+			})
+		})
+	})
+
+	authentication.Init(router)
 	endpoint.Init(router)
 
 	router.NoRoute(ReverseProxy())

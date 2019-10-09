@@ -11,6 +11,7 @@ const PATHS = {
   build: path.join(__dirname, 'public', 'dist'),
 };
 
+console.log(JSON.stringify(PATHS))
 
 module.exports = {
   mode: 'development',
@@ -74,7 +75,7 @@ module.exports = {
           { loader: 'less-loader',
             options: {
               modifyVars: {
-                'hack': `true; @import "${__dirname}/app/less/antd-custom.less";`
+                'hack': `true; @import "${__dirname}/react/less/antd-custom.less";`
               },
               javascriptEnabled: true
             }

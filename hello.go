@@ -5,15 +5,13 @@ import (
 	"hello/models/users"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"reflect"
-	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"gopkg.in/oauth2.v3/errors"
-	"gopkg.in/oauth2.v3/manage"
 	"gopkg.in/oauth2.v3/models"
-	"gopkg.in/oauth2.v3/server"
 	"gopkg.in/oauth2.v3/store"
 )
 
@@ -102,57 +100,91 @@ func initClientStore() *store.ClientStore {
 	return clientStore
 }
 
+func ReverseProxy() gin.HandlerFunc {
+
+	target := "localhost:3000"
+
+	return func(c *gin.Context) {
+		director := func(req *http.Request) {
+			r := c.Request
+			req = r
+			req.URL.Scheme = "http"
+			req.URL.Host = target
+			req.Host = target
+			req.Header["my-header"] = []string{r.Header.Get("my-header")}
+			// Golang camelcases headers
+			delete(req.Header, "My-Header")
+		}
+		proxy := &httputil.ReverseProxy{Director: director}
+		proxy.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	manager := manage.NewDefaultManager()
+	/*
+		manager := manage.NewDefaultManager()
 
-	manager.MustTokenStorage(store.NewFileTokenStore(os.Getenv("ROOT_DIR") + "/_tokens/store"))
-	//manager.MapAccessGenerate(generates.NewJWTAccessGenerate([]byte("00000000"), jwt.SigningMethodHS512))
+		manager.MustTokenStorage(store.NewFileTokenStore(os.Getenv("ROOT_DIR") + "/_tokens/store"))
+		//manager.MapAccessGenerate(generates.NewJWTAccessGenerate([]byte("00000000"), jwt.SigningMethodHS512))
 
-	manager.MapClientStorage(initClientStore())
+		manager.MapClientStorage(initClientStore())
 
-	// refresh_token wanted
-	manager.SetClientTokenCfg(&manage.Config{
-		AccessTokenExp:    time.Hour * 1,
-		RefreshTokenExp:   time.Hour * 2,
-		IsGenerateRefresh: true,
-	})
+		// refresh_token wanted
+		manager.SetClientTokenCfg(&manage.Config{
+			AccessTokenExp:    time.Hour * 1,
+			RefreshTokenExp:   time.Hour * 2,
+			IsGenerateRefresh: true,
+		})
 
-	srv := server.NewDefaultServer(manager)
-	srv.SetAllowGetAccessRequest(true)
-	srv.SetClientInfoHandler(server.ClientFormHandler)
+		srv := server.NewDefaultServer(manager)
+		srv.SetAllowGetAccessRequest(true)
+		srv.SetClientInfoHandler(server.ClientFormHandler)
 
-	srv.SetInternalErrorHandler(func(err error) (re *errors.Response) {
-		log.Println("Internal Error:", err.Error())
-		return
-	})
-
-	srv.SetResponseErrorHandler(func(re *errors.Response) {
-		log.Println("Response Error:", re.Error.Error())
-	})
-
-	http.HandleFunc("/o/token", func(w http.ResponseWriter, r *http.Request) {
-		srv.HandleTokenRequest(w, r)
-	})
-
-	http.HandleFunc("/o/refresh", func(w http.ResponseWriter, r *http.Request) {
-		srv.HandleTokenRequest(w, r)
-	})
-
-	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		token, err := srv.ValidationBearerToken(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		srv.SetInternalErrorHandler(func(err error) (re *errors.Response) {
+			log.Println("Internal Error:", err.Error())
 			return
-		}
-		w.Write([]byte(token.GetScope() + " Doing good?"))
-	})
+		})
+
+		srv.SetResponseErrorHandler(func(re *errors.Response) {
+			log.Println("Response Error:", re.Error.Error())
+		})
+
+		http.HandleFunc("/o/token", func(w http.ResponseWriter, r *http.Request) {
+			srv.HandleTokenRequest(w, r)
+		})
+
+		http.HandleFunc("/o/refresh", func(w http.ResponseWriter, r *http.Request) {
+			srv.HandleTokenRequest(w, r)
+		})
+
+		http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+			token, err := srv.ValidationBearerToken(r)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			w.Write([]byte(token.GetScope() + " Doing good?"))
+		})
+
+	*/
 
 	fmt.Println("starting server")
-	log.Fatal(http.ListenAndServe(os.Getenv("PORT"), nil))
+
+	router := gin.Default()
+
+	router.GET("/hello", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "received",
+		})
+	})
+
+	router.GET("/app", ReverseProxy())
+
+	router.Run(os.Getenv("PORT"))
 
 }

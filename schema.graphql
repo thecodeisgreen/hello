@@ -1,0 +1,19 @@
+# source: http://localhost:8080/graphql
+# timestamp: Wed Oct 09 2019 21:32:31 GMT+0200 (GMT+02:00)
+
+type Mutation {
+  saveUser(id: ID, email: String): SaveUserMutationRespone
+}
+
+type Query {
+  user(id: String): User
+}
+
+type SaveUserMutationRespone {
+  ok: Boolean
+}
+
+type User {
+  email: String
+  id: String
+}

@@ -187,6 +187,7 @@ func main() {
 	})
 
 	endpoint.Init(router)
+
 	router.NoRoute(ReverseProxy())
 
 	router.Run(os.Getenv("PORT"))

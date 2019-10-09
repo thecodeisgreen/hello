@@ -105,15 +105,13 @@ func ReverseProxy() gin.HandlerFunc {
 	target := "localhost:3000"
 
 	return func(c *gin.Context) {
+		fmt.Println(c.Request)
 		director := func(req *http.Request) {
-			r := c.Request
-			req = r
+			//req = c.Request
+			//req = r
 			req.URL.Scheme = "http"
 			req.URL.Host = target
 			req.Host = target
-			req.Header["my-header"] = []string{r.Header.Get("my-header")}
-			// Golang camelcases headers
-			delete(req.Header, "My-Header")
 		}
 		proxy := &httputil.ReverseProxy{Director: director}
 		proxy.ServeHTTP(c.Writer, c.Request)
@@ -177,13 +175,19 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/hello", func(c *gin.Context) {
+	router.GET("/firstname", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"status": "received",
+			"firstname": "hubert",
 		})
 	})
 
-	router.GET("/app", ReverseProxy())
+	router.GET("/lastname", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"lastname": "bettan",
+		})
+	})
+
+	router.NoRoute(ReverseProxy())
 
 	router.Run(os.Getenv("PORT"))
 

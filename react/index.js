@@ -1,6 +1,7 @@
 const R = require('ramda');
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Routes from './Routes';
 
 const getDocumentRoot = () => {
   var element = document.createElement('div');
@@ -10,7 +11,7 @@ const getDocumentRoot = () => {
 
 ReactDOM.render(
   <div>
-    <h1>Hello</h1>
+    <Routes/>
   </div>,
   getDocumentRoot()
 );

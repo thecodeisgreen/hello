@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"hello/endpoint"
 	"hello/models/users"
 	"log"
 	"net/http"
@@ -171,8 +172,6 @@ func main() {
 
 	*/
 
-	fmt.Println("starting server")
-
 	router := gin.Default()
 
 	router.GET("/firstname", func(c *gin.Context) {
@@ -187,6 +186,7 @@ func main() {
 		})
 	})
 
+	endpoint.Init(router)
 	router.NoRoute(ReverseProxy())
 
 	router.Run(os.Getenv("PORT"))

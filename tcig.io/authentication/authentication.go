@@ -29,6 +29,12 @@ func initClientStore() *store.ClientStore {
 		Domain: "http://localhost",
 	})
 
+	clientStore.Set("!UHY_VBRF_xdCC_pmOP_&lk8", &models.Client{
+		ID:     "!UHY_VBRF_xdCC_pmOP_&lk8",
+		Secret: "gFtv_9&dr_=GSx_WS98_$Stg",
+		Domain: "http://localhost",
+	})
+
 	return clientStore
 }
 

@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Routes from './Routes';
 import Environment from './_graphql/Environment';
+import Tokens from './lib/Tokens';
 
 let environment;
 
@@ -12,6 +13,7 @@ const getDocumentRoot = () => {
   return element;
 };
 
+Tokens.setKey(API_USER_ID, API_KEY);
 
 (async () => {
   environment = await Environment();

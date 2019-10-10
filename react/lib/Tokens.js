@@ -1,6 +1,6 @@
 const R = require('ramda');
 import fetch from 'isomorphic-fetch';
-import Url from 'url';
+import $url from 'url';
 
 const Tokens = (() => {
   var vars = {
@@ -11,15 +11,17 @@ const Tokens = (() => {
   };
 
   const buildUrl = (pathname, query) => {
-    return Url.format({ pathname, query });
+    return $url.format({ pathname, query });
   };
 
-  const setKey = (clientId, key) => {
+  const setKey = (client_id, secret_id) => {
     vars = R.compose(
-      R.assoc('key', key),
-      R.assoc('clientId', clientId)
+      R.assoc('client_id', client_id),
+      R.assoc('secret_id', secret_id)
     )(vars);
   };
+
+  const getKey = (k) => R.prop(k)(vars)
 
   var getAccessToken = async (refresh = false) => {
     if (refresh) return getAccessTokenRefresh();
@@ -30,28 +32,34 @@ const Tokens = (() => {
 
     if (R.compose(R.not, R.isEmpty, R.prop('tokens'))(vars)) return Promise.resolve(R.path(['tokens', 'access_token'], vars));
 
-    const response = await fetch(
-      buildUrl('/u/token'),
-      {
-        method: 'POST',
-        body: JSON.stringify({ 
-          grant_type: 'client_credentials'
-        }),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Basic ' + btoa(`${R.prop('clientId', vars)}:${R.prop('key', vars)}`),
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const formData = new FormData();
+    formData.append('grant_type', 'client_credentials');
+    formData.append('client_id', getKey('client_id'));
+    formData.append('secret_id', getKey('secret_key'));
+    formData.append('scope', 'react-app');
 
-    vars = R.assoc('tokens', await response.json(), vars);
-    return R.path(['tokens', 'access_token'], vars);
-  };
+    try {
+      const response = await fetch(
+        buildUrl('/o/token'),
+        {
+          method: 'POST',
+          body: formData,
+          headers: {
+              'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      vars = R.assoc('tokens', await response.json(), vars);
+      return R.path(['tokens', 'access_token'], vars);
+    } catch(err) {
+      console.log(err.stack)
+    }
+   };
 
   const getAccessTokenRefresh = async () => {
     const response = await fetch(
-      buildUrl('/u/token'),
+      buildUrl('/o/token'),
       {
         method: 'POST',
         body: JSON.stringify({ 
@@ -60,8 +68,6 @@ const Tokens = (() => {
         }),
         headers: {
           'Accept': 'application/json',
-          'Authorization': 'Basic ' + btoa(`${R.prop('clientId', vars)}:${R.prop('key', vars)}`),
-          'Content-Type': 'application/json'
         }
       }
     );

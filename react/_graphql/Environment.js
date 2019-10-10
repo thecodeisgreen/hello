@@ -14,7 +14,7 @@ const {
 
 const GQLEnvironment = async () => {
   const sendRequest = async (url, headers, body, refresh_token = false) => {
-    //let access_token = await Tokens.getAccessToken(refresh_token);
+    let access_token = await Tokens.getAccessToken(refresh_token);
     const response = await fetch(url, {
       method: 'POST',
       credentials: 'same-origin',

@@ -102,8 +102,8 @@ module.exports = {
   plugins: [
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development'),
-      API_USER_ID: `"client_id"`,
-      API_KEY: `"client_secret"`
+      API_USER_ID: `"!UHY_VBRF_xdCC_pmOP_&lk8"`,
+      API_KEY: `"gFtv_9&dr_=GSx_WS98_$Stg"`
     }),
     new CleanWebpackPlugin({ verbose: true }),
     new HtmlWebpackPlugin({

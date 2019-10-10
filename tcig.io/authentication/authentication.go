@@ -89,10 +89,11 @@ func CheckAccess(c *gin.Context, proceed func(string)) {
 
 func CheckAccess() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, err := _srv.ValidationBearerToken(c.Request)
+		token, err := _srv.ValidationBearerToken(c.Request)
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid API token"})
 		}
+		c.Set("scope", token.GetScope())
 		c.Next()
 	}
 }

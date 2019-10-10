@@ -13,7 +13,7 @@ const getDocumentRoot = () => {
   return element;
 };
 
-Tokens.setKey(API_USER_ID, API_KEY);
+Tokens.setKey(CLIENT_ID, CLIENT_SECRET);
 
 (async () => {
   environment = await Environment();

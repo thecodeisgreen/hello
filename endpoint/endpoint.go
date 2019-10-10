@@ -23,7 +23,7 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	return result
 }
 
-func graphQLHandler() gin.HandlerFunc {
+func GraphQLHandler() gin.HandlerFunc {
 	h := handler.New(&handler.Config{
 		Schema:   &Schema,
 		Pretty:   true,
@@ -33,9 +33,4 @@ func graphQLHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
-}
-
-func Init(router *gin.Engine) {
-	group := router.Group("/graphql")
-	group.POST("", graphQLHandler())
 }

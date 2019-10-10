@@ -20,7 +20,7 @@ const GQLEnvironment = async () => {
       credentials: 'same-origin',
       headers: {
         ...headers,
-        //'Authorization': `Bearer ${access_token}`
+        'Authorization': `Bearer ${access_token}`
       },
       body
     });

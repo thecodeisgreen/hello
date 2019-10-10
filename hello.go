@@ -107,42 +107,16 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	/*
-		http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-			token, err := srv.ValidationBearerToken(r)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			w.Write([]byte(token.GetScope() + " Doing good?"))
-		})
-	*/
-
 	router := gin.Default()
-
-	router.GET("/firstname", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"firstname": "hubert",
-		})
-	})
-
-	router.GET("/lastname", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"lastname": "bettan",
-		})
-	})
+	authentication.Init(router)
 
 	router.GET("/version", func(c *gin.Context) {
-		authentication.CheckAccess(c, func(scope string) {
-			c.JSON(200, gin.H{
-				"version": "1.0.0",
-				"scope":   scope,
-			})
+		c.JSON(200, gin.H{
+			"version": "1.0.0",
 		})
 	})
 
-	authentication.Init(router)
-	endpoint.Init(router)
+	router.POST("/graphql", authentication.CheckAccess(), endpoint.GraphQLHandler())
 
 	router.NoRoute(ReverseProxy())
 

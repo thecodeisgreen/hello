@@ -2,7 +2,6 @@ package authentication
 
 import (
 	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -23,16 +22,16 @@ func initClientStore() *store.ClientStore {
 		Domain: "http://localhost",
 	})
 
-	clientStore.Set("Hubert", &models.Client{
-		ID:     "Hubert",
-		Secret: "17Elvis17",
-		Domain: "http://localhost",
-	})
-
 	clientStore.Set("!UHY_VBRF_xdCC_pmOP_&lk8", &models.Client{
 		ID:     "!UHY_VBRF_xdCC_pmOP_&lk8",
 		Secret: "gFtv_9&dr_=GSx_WS98_$Stg",
 		Domain: "http://localhost",
+	})
+
+	clientStore.Set("Hubert", &models.Client{
+		ID:     "Hubert",
+		Secret: "17Elvis17",
+		Domain: "http://localhost:8080",
 	})
 
 	return clientStore
@@ -77,6 +76,7 @@ func Init(router *gin.Engine) {
 	})
 }
 
+/*
 func CheckAccess(c *gin.Context, proceed func(string)) {
 	token, err := _srv.ValidationBearerToken(c.Request)
 	if err != nil {
@@ -84,4 +84,15 @@ func CheckAccess(c *gin.Context, proceed func(string)) {
 		return
 	}
 	proceed(token.GetScope())
+}
+*/
+
+func CheckAccess() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		_, err := _srv.ValidationBearerToken(c.Request)
+		if err != nil {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid API token"})
+		}
+		c.Next()
+	}
 }

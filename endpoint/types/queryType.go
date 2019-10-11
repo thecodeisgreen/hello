@@ -1,4 +1,4 @@
-package objects
+package types
 
 import (
 	"hello/endpoint/helper/args"

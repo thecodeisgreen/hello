@@ -1,9 +1,10 @@
-package objects
+package mutations
 
 import (
 	"hello/endpoint/helper/args"
 	"hello/endpoint/helper/fields"
 	"hello/endpoint/resolvers"
+	"hello/endpoint/types"
 
 	"github.com/graphql-go/graphql"
 )
@@ -15,13 +16,13 @@ var SignUpMutationResponseType *graphql.Object = graphql.NewObject(
 			"ok":    fields.Boolean(),
 			"error": fields.String(),
 			"user": &graphql.Field{
-				Type: UserType,
+				Type: types.UserType,
 			},
 		},
 	},
 )
 
-var SignUpMutation *graphql.Field = &graphql.Field{
+var SignUpMutationField *graphql.Field = &graphql.Field{
 	Type: SignUpMutationResponseType,
 	Args: graphql.FieldConfigArgument{
 		"email":    args.String(),

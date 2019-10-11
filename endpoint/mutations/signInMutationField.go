@@ -1,4 +1,4 @@
-package objects
+package mutations
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ var SignInMutationResponseType *graphql.Object = graphql.NewObject(
 	},
 )
 
-var SignInMutation *graphql.Field = &graphql.Field{
+var SignInMutationField *graphql.Field = &graphql.Field{
 	Type: SignInMutationResponseType,
 	Args: graphql.FieldConfigArgument{
 		"email":    args.String(),

@@ -1,4 +1,4 @@
-package mutations
+package objects
 
 import (
 	"hello/endpoint/helper/args"
@@ -14,6 +14,9 @@ var SignUpMutationResponseType *graphql.Object = graphql.NewObject(
 		Fields: graphql.Fields{
 			"ok":    fields.Boolean(),
 			"error": fields.String(),
+			"user": &graphql.Field{
+				Type: UserType,
+			},
 		},
 	},
 )
@@ -27,6 +30,6 @@ var SignUpMutation *graphql.Field = &graphql.Field{
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 		email, _ := p.Args["email"].(string)
 		password, _ := p.Args["password"].(string)
-		return resolvers.UserResolver().SignUp(email, password)
+		return resolvers.UserResolver(p.Context).SignUp(email, password)
 	},
 }

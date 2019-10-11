@@ -1,4 +1,4 @@
-package types
+package objects
 
 import (
 	"hello/endpoint/helper/args"
@@ -17,7 +17,7 @@ var QueryType = graphql.NewObject(
 					"id": args.ID(),
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					return resolvers.UserResolver().User(), nil
+					return resolvers.UserResolver(p.Context).User(), nil
 				},
 			},
 		},

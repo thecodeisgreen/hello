@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"errors"
 	"log"
 	"reflect"
 	"time"
@@ -13,6 +14,11 @@ import (
 )
 
 // User struct representing user information
+
+type NewUser struct {
+	Email    string `bson:"email"`
+	Password string `bson:"password"`
+}
 type User struct {
 	ID        primitive.ObjectID `bson:"_id"`
 	Email     string             `bson:"email"`
@@ -20,17 +26,16 @@ type User struct {
 	SessionID string             `bson:"sessionID"`
 }
 
-type UserHandler struct {
-	ID   string
-	User User
-}
+var ErrUserNotFound error = errors.New("user: user not found")
 
 var _collection *mongo.Collection
-var _ctx context.Context
 
+func getContext() context.Context {
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	return ctx
+}
 func collection() *mongo.Collection {
 	if _collection == nil {
-		_ctx, _ = context.WithTimeout(context.Background(), 5*time.Second)
 		_collection = db.Db().Collection("users")
 	}
 	return _collection
@@ -38,7 +43,7 @@ func collection() *mongo.Collection {
 
 func cursorToArray(cursor *mongo.Cursor) []User {
 	var results []User
-	for cursor.Next(_ctx) {
+	for cursor.Next(getContext()) {
 		var elem User
 		err := cursor.Decode(&elem)
 		if err != nil {
@@ -50,23 +55,18 @@ func cursorToArray(cursor *mongo.Cursor) []User {
 	if err := cursor.Err(); err != nil {
 		log.Fatal(err)
 	}
-	cursor.Close(_ctx)
+	cursor.Close(getContext())
 
 	return results
 }
 
 // Create insert a new user into users collection
-func Create(
-	Email string,
-	Password string) string {
-	res, err := collection().InsertOne(_ctx, User{
-		Email:    Email,
-		Password: Password,
-	})
+func CreateOne(user NewUser) *User {
+	res, err := collection().InsertOne(getContext(), user)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return res.InsertedID.(primitive.ObjectID).Hex()
+	return GetOneByID(res.InsertedID.(primitive.ObjectID).Hex())
 }
 
 // GetOneByID get user by _id
@@ -74,21 +74,32 @@ func GetOneByID(id string) *User {
 	var result User
 	objectID, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.M{"_id": objectID}
-	collection().FindOne(_ctx, filter).Decode(&result)
+	collection().FindOne(getContext(), filter).Decode(&result)
 	return &result
+}
+
+// GetOneByID get user by _id
+func GetOneByEmail(email string) (*User, error) {
+	var result User
+	filter := bson.M{"email": email}
+	err := collection().FindOne(getContext(), filter).Decode(&result)
+	if err == mongo.ErrNoDocuments {
+		return nil, ErrUserNotFound
+	}
+	return &result, nil
 }
 
 // GetOne
 func GetOne(filter bson.M) *User {
 	var result User
-	collection().FindOne(_ctx, filter).Decode(&result)
+	collection().FindOne(getContext(), filter).Decode(&result)
 	return &result
 }
 
 // Get query filter on users collection
 func Get(filter bson.M) []User {
 
-	cursor, err := collection().Find(_ctx, filter)
+	cursor, err := collection().Find(getContext(), filter)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -139,7 +150,7 @@ func (user *User) SetSessionID(sessionID string) {
 
 func (user *User) Save() {
 	collection().UpdateOne(
-		_ctx,
+		getContext(),
 		bson.M{"_id": user.ID},
 		user,
 	)

@@ -5,13 +5,13 @@
 package endpoint
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/gin-gonic/gin"
-	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 )
 
+/*
 func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,
@@ -22,15 +22,18 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	}
 	return result
 }
+*/
 
 func GraphQLHandler() gin.HandlerFunc {
 	h := handler.New(&handler.Config{
 		Schema:   &Schema,
 		Pretty:   true,
-		GraphiQL: true
+		GraphiQL: true,
 	})
 
 	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
+		sessionID, _ := c.Get("sessionID")
+		ctx := context.WithValue(c.Request.Context(), "sessionID", sessionID)
+		h.ContextHandler(ctx, c.Writer, c.Request)
 	}
 }

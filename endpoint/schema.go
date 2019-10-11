@@ -1,14 +1,14 @@
 package endpoint
 
 import (
-	"hello/endpoint/types"
+	"hello/endpoint/objects"
 
 	"github.com/graphql-go/graphql"
 )
 
 var Schema, _ = graphql.NewSchema(
 	graphql.SchemaConfig{
-		Query:    types.QueryType,
-		Mutation: types.MutationType,
+		Query:    objects.QueryType,
+		Mutation: objects.MutationType,
 	},
 )

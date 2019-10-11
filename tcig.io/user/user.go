@@ -10,13 +10,13 @@ import (
 func User() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var sessionID string
-		sessionID, err := c.Cookie("session_id")
+		sessionID, err := c.Cookie("sessionID")
 		fmt.Println(err)
 		if err != nil {
 			newSessionID, _ := uuid.NewRandom()
 			sessionID = newSessionID.String()
 			c.SetCookie(
-				"session_id",
+				"sessionID",
 				sessionID,
 				36000,
 				"/com.thecodeisgreen/hello",

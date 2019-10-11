@@ -1,6 +1,7 @@
-package mutations
+package objects
 
 import (
+	"fmt"
 	"hello/endpoint/helper/args"
 	"hello/endpoint/helper/fields"
 	"hello/endpoint/resolvers"
@@ -27,6 +28,7 @@ var SignInMutation *graphql.Field = &graphql.Field{
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 		email, _ := p.Args["email"].(string)
 		password, _ := p.Args["password"].(string)
-		return resolvers.UserResolver().SignIn(email, password)
+		fmt.Println(email, password)
+		return resolvers.UserResolver(p.Context).SignIn(email, password)
 	},
 }

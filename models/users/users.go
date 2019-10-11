@@ -14,8 +14,15 @@ import (
 
 // User struct representing user information
 type User struct {
-	Lastname  string
-	Firstname string
+	ID        primitive.ObjectID `bson:"_id"`
+	Email     string             `bson:"email"`
+	Password  string             `bson:"password"`
+	SessionID string             `bson:"sessionID"`
+}
+
+type UserHandler struct {
+	ID   string
+	User User
 }
 
 var _collection *mongo.Collection
@@ -50,20 +57,32 @@ func cursorToArray(cursor *mongo.Cursor) []User {
 
 // Create insert a new user into users collection
 func Create(
-	Lastname string,
-	Firstname string) {
-	collection().InsertOne(_ctx, User{
-		Lastname:  Lastname,
-		Firstname: Firstname})
+	Email string,
+	Password string) string {
+	res, err := collection().InsertOne(_ctx, User{
+		Email:    Email,
+		Password: Password,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	return res.InsertedID.(primitive.ObjectID).Hex()
 }
 
 // GetOneByID get user by _id
-func GetOneByID(id string) User {
+func GetOneByID(id string) *User {
 	var result User
 	objectID, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.M{"_id": objectID}
 	collection().FindOne(_ctx, filter).Decode(&result)
-	return result
+	return &result
+}
+
+// GetOne
+func GetOne(filter bson.M) *User {
+	var result User
+	collection().FindOne(_ctx, filter).Decode(&result)
+	return &result
 }
 
 // Get query filter on users collection
@@ -112,4 +131,16 @@ func Map(users []User, mapFunc interface{}) interface{} {
 
 	return resultSlice
 
+}
+
+func (user *User) SetSessionID(sessionID string) {
+	user.SessionID = sessionID
+}
+
+func (user *User) Save() {
+	collection().UpdateOne(
+		_ctx,
+		bson.M{"_id": user.ID},
+		user,
+	)
 }

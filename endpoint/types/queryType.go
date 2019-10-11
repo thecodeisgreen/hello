@@ -1,6 +1,7 @@
 package types
 
 import (
+	"hello/endpoint/helper/args"
 	"hello/endpoint/resolvers"
 
 	"github.com/graphql-go/graphql"
@@ -13,13 +14,10 @@ var QueryType = graphql.NewObject(
 			"user": &graphql.Field{
 				Type: UserType,
 				Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
-						Type: graphql.String,
-					},
+					"id": args.ID(),
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					idQuery, _ := p.Args["id"].(string)
-					return resolvers.UserResolver().GetOne(idQuery)
+					return resolvers.UserResolver().User(), nil
 				},
 			},
 		},

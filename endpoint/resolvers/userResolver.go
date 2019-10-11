@@ -1,33 +1,48 @@
 package resolvers
 
-import "fmt"
-
 type User struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
 }
 
 type UserResolverHandler struct {
-}
-
-type SaveUserMutationResponse struct {
-	Ok bool `json:"ok"`
-}
-
-func (handler *UserResolverHandler) GetOne(ID string) (User, error) {
-	return User{
-		ID:    ID,
-		Email: "hubert.bettan@gmail.com",
-	}, nil
-}
-
-func (handler *UserResolverHandler) SaveOne(ID string, email string) (SaveUserMutationResponse, error) {
-	fmt.Println(ID, email)
-	return SaveUserMutationResponse{
-		Ok: true,
-	}, nil
+	sessionID string
 }
 
 func UserResolver() *UserResolverHandler {
 	return &UserResolverHandler{}
+}
+
+func (handler *UserResolverHandler) User() User {
+	return User{
+		Email: "hubert.bettan@gmail.com",
+	}
+}
+
+/*
+ *
+ * Mutations
+ *
+ */
+
+// SignInMutationResponse is the return type of SignInMutation
+type SignInMutationResponse struct {
+	Ok bool `json:"ok"`
+}
+
+func (handler *UserResolverHandler) SignIn(email string, password string) (SignInMutationResponse, error) {
+	return SignInMutationResponse{
+		Ok: true,
+	}, nil
+}
+
+// SignUoMutationResponse is the return type of SignUpMutation
+type SignUpMutationResponse struct {
+	Ok bool `json:"ok"`
+}
+
+func (handler *UserResolverHandler) SignUp(email string, password string) (SignUpMutationResponse, error) {
+	return SignUpMutationResponse{
+		Ok: true,
+	}, nil
 }

@@ -27,7 +27,7 @@ func GraphQLHandler() gin.HandlerFunc {
 	h := handler.New(&handler.Config{
 		Schema:   &Schema,
 		Pretty:   true,
-		GraphiQL: true,
+		GraphiQL: true
 	})
 
 	return func(c *gin.Context) {

@@ -1,17 +1,17 @@
 package types
 
-import "github.com/graphql-go/graphql"
+import (
+	"hello/endpoint/helper/fields"
+
+	"github.com/graphql-go/graphql"
+)
 
 var UserType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "User",
 		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.String,
-			},
-			"email": &graphql.Field{
-				Type: graphql.String,
-			},
+			"id":    fields.String(),
+			"email": fields.String(),
 		},
 	},
 )

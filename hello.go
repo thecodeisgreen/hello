@@ -2,15 +2,14 @@ package main
 
 import (
 	"hello/endpoint"
+	"hello/middlewares"
 	"log"
 	"os"
 
-	"hello/tcig.io/authentication"
-	"hello/tcig.io/hot_reloading"
-	"hello/tcig.io/user"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"hello/tcig.io/authentication"
+	"hello/tcig.io/hot_reloading"
 )
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 
 	authentication.Init(router)
 
-	router.Use(user.User())
+	router.Use(middlewares.User())
 
 	router.GET("/_/info", func(c *gin.Context) {
 		sessionID, _ := c.Get("sessionID")

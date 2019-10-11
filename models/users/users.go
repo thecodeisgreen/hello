@@ -24,6 +24,7 @@ type User struct {
 	Email     string             `bson:"email"`
 	Password  string             `bson:"password"`
 	SessionID string             `bson:"sessionID"`
+	ForceID   *string
 }
 
 var ErrUserNotFound error = errors.New("user: user not found")
@@ -61,21 +62,27 @@ func cursorToArray(cursor *mongo.Cursor) []User {
 }
 
 // Create insert a new user into users collection
-func CreateOne(user NewUser) *User {
-	res, err := collection().InsertOne(getContext(), user)
+func CreateOne(newUser NewUser) *User {
+	res, err := collection().InsertOne(getContext(), newUser)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return GetOneByID(res.InsertedID.(primitive.ObjectID).Hex())
+
+	user, _ := GetOneByID(res.InsertedID.(primitive.ObjectID).Hex())
+
+	return user
 }
 
 // GetOneByID get user by _id
-func GetOneByID(id string) *User {
+func GetOneByID(id string) (*User, error) {
 	var result User
 	objectID, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.M{"_id": objectID}
-	collection().FindOne(getContext(), filter).Decode(&result)
-	return &result
+	err := collection().FindOne(getContext(), filter).Decode(&result)
+	if err == mongo.ErrNoDocuments {
+		return nil, ErrUserNotFound
+	}
+	return &result, nil
 }
 
 // GetOneByID get user by _id

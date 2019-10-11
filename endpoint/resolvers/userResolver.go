@@ -22,10 +22,14 @@ func UserResolver(ctx context.Context) *UserResolverHandler {
 	}
 }
 
-func (handler *UserResolverHandler) User() User {
-	return User{
-		Email: "hubert.bettan@gmail.com",
+func (handler *UserResolverHandler) User() users.User {
+	user, err := users.GetOneByID(handler.SessionID)
+
+	if err == users.ErrUserNotFound {
+		return users.User{}
 	}
+
+	return *user
 }
 
 /*

@@ -17,7 +17,10 @@ var QueryType = graphql.NewObject(
 					"id": args.ID(),
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					return resolvers.UserResolver(p.Context).User(), nil
+					user := resolvers.UserResolver(p.Context).User()
+					forcedID := "user"
+					user.ForceID = &forcedID
+					return user, nil
 				},
 			},
 		},

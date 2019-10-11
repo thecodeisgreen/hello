@@ -4,8 +4,15 @@ import (
 	"hello/endpoint/helper/fields"
 	"hello/models/users"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"github.com/graphql-go/graphql"
 )
+
+type UserTypeStruct struct {
+	ID    *string
+	Email string `bson:"email"`
+}
 
 var UserType = graphql.NewObject(
 	graphql.ObjectConfig{
@@ -14,7 +21,17 @@ var UserType = graphql.NewObject(
 			"id": &graphql.Field{
 				Type: graphql.ID,
 				Resolve: (func(p graphql.ResolveParams) (interface{}, error) {
-					return p.Source.(users.User).ID.Hex(), nil
+					forcedID := p.Source.(users.User).ForceID
+					if forcedID != nil {
+						return *forcedID, nil
+					}
+
+					ID := p.Source.(users.User).ID
+					if ID == primitive.NilObjectID {
+						return nil, nil
+					}
+
+					return ID.Hex(), nil
 				}),
 			},
 			"email": fields.String(),

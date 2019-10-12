@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"hello/models/users"
 	"log"
 	"os"
+
+	"hello/endpoint"
+	"hello/middlewares"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -21,27 +22,19 @@ func main() {
 
 	authentication.Init(router)
 
-	user, err := users.GetOneByEmail("hubert.bettan@gmail.com")
-	if err == users.ErrUserNotFound {
-		fmt.Println("user not found")
-	} else {
-		fmt.Println("user found", user)
-	}
-	/*
-		router.Use(middlewares.User())
+	router.Use(middlewares.User())
 
-		router.GET("/_/info", func(c *gin.Context) {
-			sessionID, _ := c.Get("sessionID")
-			c.JSON(200, gin.H{
-				"version":   "1.0.0",
-				"sessionID": sessionID,
-			})
+	router.GET("/_/info", func(c *gin.Context) {
+		sessionID, _ := c.Get("sessionID")
+		c.JSON(200, gin.H{
+			"version":   "1.0.0",
+			"sessionID": sessionID,
 		})
+	})
 
-		router.POST("/graphql", authentication.CheckAccess(), endpoint.GraphQLHandler())
+	router.POST("/graphql", authentication.CheckAccess(), endpoint.GraphQLHandler())
 
-		//router.NoRoute(hot_reloading.ReverseProxy())
-	*/
+	//router.NoRoute(hot_reloading.ReverseProxy())
 	router.Run(os.Getenv("PORT"))
 
 }

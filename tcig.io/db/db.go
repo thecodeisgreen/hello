@@ -30,8 +30,6 @@ func Db() *mongo.Database {
 		fmt.Println("connected")
 
 		_dbHandler = client.Database(os.Getenv("MONGO_DATABASE"))
-		fmt.Println("** **")
-
 	}
 	return _dbHandler
 }

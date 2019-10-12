@@ -3,41 +3,55 @@ package middlewares
 import (
 	"fmt"
 	"hello/models/users"
+	"log"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
+func getParams(c *gin.Context) url.Values {
+	var params url.Values = url.Values{}
+
+	value, err := c.Cookie("HELLO_SESSION")
+	fmt.Println(err)
+	if err != nil {
+		newSessionID, _ := uuid.NewRandom()
+		params.Add("sessionID", newSessionID.String())
+	} else {
+		decodedValue, err := url.QueryUnescape(value)
+		if err != nil {
+			log.Fatal(err)
+		}
+		params, err = url.ParseQuery(decodedValue)
+		fmt.Println(params)
+	}
+
+	return params
+}
+
 func User() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var sessionID string
+		params := getParams(c)
 
-		sessionCookieValue, err := c.Cookie("hello_session")
-		fmt.Println(err)
-		if err != nil {
-			newSessionID, _ := uuid.NewRandom()
-			sessionID = newSessionID.String()
-			sessionCookieValue = "sessionId=" + sessionID + ";"
-		}
+		user, _ := users.GetOneBySessionID(params.Get("sessionID"))
 
-		fmt.Println("-----")
-		user, err := users.GetOneBySessionID(sessionID)
 		fmt.Println(user)
 		if user != nil {
-			sessionCookieValue = sessionCookieValue + "email=" + user.Email + ";"
+			params.Add("email", user.Email)
 		}
 
 		c.SetCookie(
-			"hello_session",
-			sessionCookieValue,
+			"HELLO_SESSION",
+			params.Encode(),
 			36000,
 			"/com.thecodeisgreen/hello",
 			"localhost",
 			false, // should be set to true when https is being used
-			true,
+			false,
 		)
 
-		c.Set("sessionID", sessionID)
+		c.Set("sessionID", params.Get("sessionID"))
 		c.Next()
 	}
 }

@@ -36,9 +36,7 @@ func getContext() context.Context {
 }
 func collection() *mongo.Collection {
 	if _collection == nil {
-		print("*******")
 		_collection = db.Db().Collection("users")
-		print("*******")
 	}
 	return _collection
 }

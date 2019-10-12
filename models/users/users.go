@@ -3,9 +3,9 @@ package users
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"reflect"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -32,12 +32,13 @@ var ErrUserNotFound error = errors.New("user: user not found")
 var _collection *mongo.Collection
 
 func getContext() context.Context {
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	return ctx
+	return context.TODO()
 }
 func collection() *mongo.Collection {
 	if _collection == nil {
+		print("*******")
 		_collection = db.Db().Collection("users")
+		print("*******")
 	}
 	return _collection
 }
@@ -75,32 +76,28 @@ func CreateOne(newUser NewUser) *User {
 
 // GetOneByID get user by _id
 func GetOneByID(id string) (*User, error) {
-	var result User
-	objectID, _ := primitive.ObjectIDFromHex(id)
-	filter := bson.M{"_id": objectID}
-	err := collection().FindOne(getContext(), filter).Decode(&result)
-	if err == mongo.ErrNoDocuments {
-		return nil, ErrUserNotFound
-	}
-	return &result, nil
+	return getOne(bson.M{"_id": id})
 }
 
 // GetOneByID get user by _id
 func GetOneByEmail(email string) (*User, error) {
+	return getOne(bson.M{"email": email})
+}
+
+// GetOneBySessionID
+func GetOneBySessionID(sessionID string) (*User, error) {
+	return getOne(bson.M{"sessionID": sessionID})
+}
+
+func getOne(filter bson.M) (*User, error) {
 	var result User
-	filter := bson.M{"email": email}
-	err := collection().FindOne(getContext(), filter).Decode(&result)
-	if err == mongo.ErrNoDocuments {
+	fmt.Println("---->", filter)
+	err := collection().FindOne(context.TODO(), filter).Decode(&result)
+	fmt.Println("---->")
+	if err == mongo.ErrNoDocuments || result.ID == primitive.NilObjectID {
 		return nil, ErrUserNotFound
 	}
 	return &result, nil
-}
-
-// GetOne
-func GetOne(filter bson.M) *User {
-	var result User
-	collection().FindOne(getContext(), filter).Decode(&result)
-	return &result
 }
 
 // Get query filter on users collection

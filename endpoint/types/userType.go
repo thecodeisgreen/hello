@@ -21,16 +21,10 @@ var UserType = graphql.NewObject(
 			"id": &graphql.Field{
 				Type: graphql.ID,
 				Resolve: (func(p graphql.ResolveParams) (interface{}, error) {
-					forcedID := p.Source.(users.User).ForceID
-					if forcedID != nil {
-						return *forcedID, nil
-					}
-
 					ID := p.Source.(users.User).ID
 					if ID == primitive.NilObjectID {
 						return nil, nil
 					}
-
 					return ID.Hex(), nil
 				}),
 			},

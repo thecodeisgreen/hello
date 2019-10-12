@@ -23,7 +23,7 @@ func UserResolver(ctx context.Context) *UserResolverHandler {
 }
 
 func (handler *UserResolverHandler) User() users.User {
-	user, err := users.GetOneByID(handler.SessionID)
+	user, err := users.GetOneBySessionID(handler.SessionID)
 
 	if err == users.ErrUserNotFound {
 		return users.User{}

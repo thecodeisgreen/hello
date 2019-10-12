@@ -11,15 +11,13 @@ var QueryType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"user": &graphql.Field{
+			"UserSession": &graphql.Field{
 				Type: UserType,
 				Args: graphql.FieldConfigArgument{
 					"id": args.ID(),
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					user := resolvers.UserResolver(p.Context).User()
-					forcedID := "user"
-					user.ForceID = &forcedID
 					return user, nil
 				},
 			},

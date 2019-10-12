@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { hot } from 'react-hot-loader';
-
-import User from './containers/User';
+import { useCookies } from 'react-cookie';
 
 const Routes = () => {
+  const [cookies] = useCookies(['session']);
+
+  useEffect(() => {
+    fetch('/_/info')
+  }, [])
 
   return(
     <div>
       <h1>Hello</h1>
-      <User/>
+      {JSON.stringify(cookies)}
     </div>
   )
 }

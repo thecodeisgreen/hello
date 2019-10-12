@@ -2,8 +2,9 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"os"
-	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,10 +15,23 @@ var _dbHandler *mongo.Database
 func Db() *mongo.Database {
 
 	if _dbHandler == nil {
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		client, _ := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGO_DB_URL")))
+		fmt.Println("connection to ", os.Getenv("MONGO_DB_URL"))
+		clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_DB_URL"))
+		client, err := mongo.Connect(context.TODO(), clientOptions)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = client.Ping(context.Background(), nil)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("connected")
 
 		_dbHandler = client.Database(os.Getenv("MONGO_DATABASE"))
+		fmt.Println("** **")
+
 	}
 	return _dbHandler
 }

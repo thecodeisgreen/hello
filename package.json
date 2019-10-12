@@ -19,10 +19,12 @@
     "graphql": "^14.5.8",
     "ramda": "^0.26.1",
     "react": "^16.10.2",
+    "react-cookie": "^4.0.1",
     "react-dom": "^16.10.2",
     "react-relay": "^6.0.0",
     "relay-runtime": "^6.0.0",
-    "subscriptions-transport-ws": "^0.9.16"
+    "subscriptions-transport-ws": "^0.9.16",
+    "universal-cookie": "^4.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",

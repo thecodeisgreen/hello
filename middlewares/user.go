@@ -2,8 +2,8 @@ package middlewares
 
 import (
 	"fmt"
-	"hello/models/users"
 	"log"
+	"net/http"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
@@ -14,8 +14,7 @@ func getParams(c *gin.Context) url.Values {
 	var params url.Values = url.Values{}
 
 	value, err := c.Cookie("HELLO_SESSION")
-	fmt.Println(err)
-	if err != nil {
+	if err == http.ErrNoCookie {
 		newSessionID, _ := uuid.NewRandom()
 		params.Add("sessionID", newSessionID.String())
 	} else {
@@ -34,12 +33,14 @@ func User() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		params := getParams(c)
 
-		user, _ := users.GetOneBySessionID(params.Get("sessionID"))
+		/*
+			user, _ := users.GetOneBySessionID(params.Get("sessionID"))
 
-		fmt.Println(user)
-		if user != nil {
-			params.Add("email", user.Email)
-		}
+			fmt.Println(user)
+			if user != nil {
+				params.Add("email", user.Email)
+			}
+		*/
 
 		c.SetCookie(
 			"HELLO_SESSION",

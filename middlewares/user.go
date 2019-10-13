@@ -46,8 +46,8 @@ func User() gin.HandlerFunc {
 			"HELLO_SESSION",
 			params.Encode(),
 			36000,
-			"/com.thecodeisgreen/hello",
-			"localhost",
+			"",
+			"",
 			false, // should be set to true when https is being used
 			false,
 		)
